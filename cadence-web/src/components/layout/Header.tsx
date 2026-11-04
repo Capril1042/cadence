@@ -1,18 +1,29 @@
+import { Link } from 'react-router-dom'
+
 function Header() {
     return (
-        <header className="border-b border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-5">
-                <h1 className="text-2xl font-bold text-slate-900">
-                    cadence
-                </h1>
+        <header className="flex items-center justify-between bg-white px-8 py-5 shadow-sm">
+            <Link to="/" className="text-2xl font-bold text-indigo-600">
+                cadence
+            </Link>
 
-                <nav className="flex gap-8 text-sm font-medium text-slate-600">
-                    <a href="#" className="text-indigo-600">Dashboard</a>
-                    <a href="#">Classes</a>
-                    <a href="#">Members</a>
-                    <a href="#">Analytics</a>
-                </nav>
-            </div>
+            <nav className="flex gap-6 text-sm font-medium text-gray-600">
+                <Link to="/" className="hover:text-indigo-600">
+                    Dashboard
+                </Link>
+
+                <Link to="/members" className="hover:text-indigo-600">
+                    Members
+                </Link>
+
+                <a href="#" className="hover:text-indigo-600">
+                    Classes
+                </a>
+
+                <a href="#" className="hover:text-indigo-600">
+                    Analytics
+                </a>
+            </nav>
         </header>
     )
 }

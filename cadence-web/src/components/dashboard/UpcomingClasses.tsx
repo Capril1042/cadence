@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import type { ClassSession } from '../../types/ClassSession'
 import type { Booking } from '../../types/Booking'
 import {
@@ -6,6 +5,8 @@ import {
     getUpcomingClasses,
     getBookings,
 } from '../../services/classService'
+import { trackEvent } from '../../services/analyticsService'
+import { useEffect, useRef, useState } from 'react'
 
 function UpcomingClasses() {
     const [classes, setClasses] = useState<ClassSession[]>([])
@@ -17,6 +18,7 @@ function UpcomingClasses() {
     const [bookingMessageClassId, setBookingMessageClassId] = useState<number | null>(null)
     const [bookingMessageType, setBookingMessageType] = useState<'success' | 'error' | null>(null)
     const [bookings, setBookings] = useState<Booking[]>([])
+    const trackedClassViews = useRef<Set<number>>(new Set())
 
     useEffect(() => {
         async function loadClasses() {
@@ -25,6 +27,24 @@ function UpcomingClasses() {
                 const bookingData = await getBookings()
 
                 setClasses(classData)
+                for (const classSession of classData) {
+                    if (trackedClassViews.current.has(classSession.id)) {
+                        continue
+                    }
+
+                    trackedClassViews.current.add(classSession.id)
+
+                    try {
+                        await trackEvent({
+                            eventName: 'CLASS_VIEWED',
+                            memberId: 1,
+                            classSessionId: classSession.id,
+                        })
+                    } catch (error) {
+                        trackedClassViews.current.delete(classSession.id)
+                        console.error('Analytics tracking failed:', error)
+                    }
+                }
                 setBookings(bookingData)
             } catch {
                 setError('Unable to load classes. Please try again.')
@@ -39,10 +59,27 @@ function UpcomingClasses() {
         setBookingId(classId)
         setBookingMessage(null)
         setBookingMessageClassId(classId)
+        try {
+            await trackEvent({
+                eventName: 'BOOKING_STARTED',
+                memberId: 1,
+                classSessionId: classId,
+            })
+        } catch (error) {
+            console.error('Analytics tracking failed:', error)
+        }
 
         try {
             const newBooking = await bookClass(1, classId)
-
+            try {
+                await trackEvent({
+                    eventName: 'BOOKING_COMPLETED',
+                    memberId: 1,
+                    classSessionId: classId,
+                })
+            } catch (error) {
+                console.error('Analytics tracking failed:', error)
+            }
             setBookings((currentBookings) => [
                 ...currentBookings,
                 newBooking,

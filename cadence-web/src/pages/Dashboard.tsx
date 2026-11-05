@@ -1,6 +1,8 @@
 import Header from '../components/layout/Header'
 import MetricCard from '../components/dashboard/MetricCard'
 import UpcomingClasses from '../components/dashboard/UpcomingClasses'
+import BookingFunnel from '../components/dashboard/BookingFunnel'
+import ClassFunnelComparison from '../components/dashboard/ClassFunnelComparison'
 
 function Dashboard() {
   return (
@@ -22,7 +24,8 @@ function Dashboard() {
           <MetricCard title="Monthly Revenue" value="$12,450" />
           <MetricCard title="Class Bookings" value="186" />
         </div>
-
+        <BookingFunnel />
+        <ClassFunnelComparison />
         <UpcomingClasses />
       </main>
     </div>

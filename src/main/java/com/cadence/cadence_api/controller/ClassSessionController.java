@@ -7,9 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-
 import java.util.List;
 
 @RestController
@@ -26,9 +23,5 @@ public class ClassSessionController {
     @GetMapping
     public List<ClassSession> getUpcomingClasses() {
         return classSessionService.getUpcomingClasses();
-    }
-    @PostMapping("/{classId}/book")
-    public ClassSession bookClass(@PathVariable Long classId) {
-        return classSessionService.bookClass(classId);
     }
 }

@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { ClassSession } from '../../types/ClassSession'
-import { bookClass, getUpcomingClasses } from '../../services/classService'
+import type { Booking } from '../../types/Booking'
+import {
+    bookClass,
+    getUpcomingClasses,
+    getBookings,
+} from '../../services/classService'
 
 function UpcomingClasses() {
     const [classes, setClasses] = useState<ClassSession[]>([])
@@ -9,12 +14,18 @@ function UpcomingClasses() {
     const [error, setError] = useState<string | null>(null)
     const [bookingId, setBookingId] = useState<number | null>(null)
     const [bookingMessage, setBookingMessage] = useState<string | null>(null)
+    const [bookingMessageClassId, setBookingMessageClassId] = useState<number | null>(null)
+    const [bookingMessageType, setBookingMessageType] = useState<'success' | 'error' | null>(null)
+    const [bookings, setBookings] = useState<Booking[]>([])
 
     useEffect(() => {
         async function loadClasses() {
             try {
-                const data = await getUpcomingClasses()
-                setClasses(data)
+                const classData = await getUpcomingClasses()
+                const bookingData = await getBookings()
+
+                setClasses(classData)
+                setBookings(bookingData)
             } catch {
                 setError('Unable to load classes. Please try again.')
             } finally {
@@ -27,33 +38,49 @@ function UpcomingClasses() {
     async function handleBooking(classId: number) {
         setBookingId(classId)
         setBookingMessage(null)
+        setBookingMessageClassId(classId)
 
         try {
-            const updatedClass = await bookClass(classId)
+            const newBooking = await bookClass(1, classId)
 
-            setClasses((currentClasses) =>
-                currentClasses.map((classSession) =>
-                    classSession.id === updatedClass.id
-                        ? updatedClass
-                        : classSession
-                )
+            setBookings((currentBookings) => [
+                ...currentBookings,
+                newBooking,
+            ])
+
+            setBookingMessage(
+                `${newBooking.classSession.name} successfully booked!`
             )
-
-            setBookingMessage(`${updatedClass.name} successfully booked!`)
-        } catch {
-            setBookingMessage('Unable to book this class. Please try again.')
+            setBookingMessageType('success')
+        } catch (error) {
+            setBookingMessage(
+                error instanceof Error
+                    ? error.message
+                    : 'Unable to book this class. Please try again.'
+            )
+            setBookingMessageType('error')
         } finally {
             setBookingId(null)
         }
     }
 
+    function getBookingCount(classId: number): number {
+        return bookings.filter(
+            (booking) =>
+                booking.classSession.id === classId &&
+                booking.status === 'BOOKED'
+        ).length
+    }
+
     const filteredClasses = classes.filter((classSession) => {
+        const bookingCount = getBookingCount(classSession.id)
+
         if (filter === 'available') {
-            return classSession.bookings < classSession.capacity
+            return bookingCount < classSession.capacity
         }
 
         if (filter === 'full') {
-            return classSession.bookings >= classSession.capacity
+            return bookingCount >= classSession.capacity
         }
 
         return true
@@ -110,11 +137,6 @@ function UpcomingClasses() {
                 </button>
             </div>
 
-            {bookingMessage && (
-                <p className="mb-4 text-sm font-medium text-indigo-600">
-                    {bookingMessage}
-                </p>
-            )}
             {loading ? (
                 <p className="py-10 text-center text-slate-500">
                     Loading classes...
@@ -151,28 +173,28 @@ function UpcomingClasses() {
                     </span>
 
                                 <div>
-                                    {classSession.bookings} / {classSession.capacity}
+                                    {getBookingCount(classSession.id)} / {classSession.capacity}
 
                                     <span className={`text-xs font-medium ${
-                                        classSession.bookings >= classSession.capacity
+                                        getBookingCount(classSession.id) >= classSession.capacity
                                             ? 'text-red-600'
                                             : 'text-slate-400'
                                     }`}>
-                            {classSession.bookings >= classSession.capacity
-                                ? ' Fully booked'
-                                : ` ${classSession.capacity - classSession.bookings} spots left`}
-                        </span>
+        {getBookingCount(classSession.id) >= classSession.capacity
+            ? ' Fully booked'
+            : ` ${classSession.capacity - getBookingCount(classSession.id)} spots left`}
+    </span>
 
                                     <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
                                         <div
                                             className="h-2 rounded-full bg-indigo-600"
                                             style={{
-                                                width: `${(classSession.bookings / classSession.capacity) * 100}%`,
+                                                width: `${(getBookingCount(classSession.id) / classSession.capacity) * 100}%`,
                                             }}
                                         />
                                     </div>
                                 </div>
-                                {classSession.bookings < classSession.capacity && (
+                                {getBookingCount(classSession.id) < classSession.capacity && (
                                     <button
                                         onClick={() => handleBooking(classSession.id)}
                                         disabled={bookingId === classSession.id}
@@ -180,6 +202,17 @@ function UpcomingClasses() {
                                     >
                                         {bookingId === classSession.id ? 'Booking...' : 'Book Class'}
                                     </button>
+                                )}
+                                {bookingMessage && bookingMessageClassId === classSession.id && (
+                                    <p
+                                        className={`mb-4 text-sm font-medium ${
+                                            bookingMessageType === 'success'
+                                                ? 'text-green-600'
+                                                : 'text-red-600'
+                                        }`}
+                                    >
+                                        {bookingMessage}
+                                    </p>
                                 )}
                             </div>
                         ))

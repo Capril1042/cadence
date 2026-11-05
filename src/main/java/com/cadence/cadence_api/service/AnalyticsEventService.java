@@ -108,4 +108,7 @@ public class AnalyticsEventService {
                 "overallConversionRate", overallConversionRate
         );
     }
+    public List<Object[]> getClassEventSummary() {
+        return analyticsEventRepository.getClassEventSummary();
+    }
 }

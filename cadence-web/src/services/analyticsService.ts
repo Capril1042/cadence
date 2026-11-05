@@ -44,6 +44,17 @@ export interface ClassFunnel extends BookingFunnel {
     classSessionId: number
 }
 
+export interface ClassAnalyticsSummary {
+    classSessionId: number
+    className: string
+    views: number
+    bookingStarts: number
+    bookingsCompleted: number
+    viewToStartRate: number
+    viewToBookingRate: number
+    bookingAbandonmentRate: number | null
+}
+
 export async function getBookingFunnel(): Promise<BookingFunnel> {
     const response = await fetch(
         'http://localhost:8080/api/analytics/events/funnel'
@@ -68,4 +79,28 @@ export async function getClassFunnel(
     }
 
     return response.json()
+}
+
+export async function getClassAnalyticsSummary(): Promise<ClassAnalyticsSummary[]> {
+    const response = await fetch(
+        'http://localhost:8080/api/analytics/events/class-summary'
+    )
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch class analytics summary')
+    }
+
+    const rows: (string | number | null)[][] = await response.json()
+
+    return rows.map((row) => ({
+        classSessionId: Number(row[0]),
+        className: String(row[1]),
+        views: Number(row[2]),
+        bookingStarts: Number(row[3]),
+        bookingsCompleted: Number(row[4]),
+        viewToStartRate: Number(row[5]),
+        viewToBookingRate: Number(row[6]),
+        bookingAbandonmentRate:
+            row[7] === null ? null : Number(row[7]),
+    }))
 }

@@ -49,4 +49,9 @@ public class AnalyticsEventController {
     ) {
         return analyticsEventService.getClassFunnel(classSessionId);
     }
+
+    @GetMapping("/class-summary")
+    public List<Object[]> getClassEventSummary() {
+        return analyticsEventService.getClassEventSummary();
+    }
 }

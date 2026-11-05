@@ -1,30 +1,20 @@
+
 import { useEffect, useState } from 'react'
 import {
-    getClassFunnel,
-    type ClassFunnel,
+    getClassAnalyticsSummary,
+    type ClassAnalyticsSummary,
 } from '../../services/analyticsService'
-import { getUpcomingClasses } from '../../services/classService'
-import type { ClassSession } from '../../types/ClassSession'
 
 function ClassFunnelComparison() {
-    const [classes, setClasses] = useState<ClassSession[]>([])
-    const [funnels, setFunnels] = useState<ClassFunnel[]>([])
+    const [analytics, setAnalytics] = useState<ClassAnalyticsSummary[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        async function loadClassFunnels() {
+        async function loadClassAnalytics() {
             try {
-                const classData = await getUpcomingClasses()
-                setClasses(classData)
-
-                const funnelData = await Promise.all(
-                    classData.map((classSession) =>
-                        getClassFunnel(classSession.id)
-                    )
-                )
-
-                setFunnels(funnelData)
+                const data = await getClassAnalyticsSummary()
+                setAnalytics(data)
             } catch {
                 setError('Unable to load class analytics.')
             } finally {
@@ -32,7 +22,7 @@ function ClassFunnelComparison() {
             }
         }
 
-        loadClassFunnels()
+        loadClassAnalytics()
     }, [])
 
     if (loading) return <p>Loading class comparisons...</p>
@@ -43,51 +33,44 @@ function ClassFunnelComparison() {
             <h3 className="mb-5 text-xl font-bold text-slate-900">
                 Class Conversion Comparison
             </h3>
-
+            <p className="mb-4 text-sm text-slate-500">
+                Conversion rates are based on recorded class views.
+                Small sample sizes should be interpreted with caution.
+            </p>
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                     <thead className="border-b text-slate-500">
                     <tr>
                         <th className="py-3">Class</th>
-                        <th className="py-3">Views</th>
-                        <th className="py-3">Starts</th>
+                        <th className="py-3">Views (Sample Size)</th>                        <th className="py-3">Starts</th>
                         <th className="py-3">Completed</th>
                         <th className="py-3">Conversion</th>
+                        <th className="py-3">Abandonment</th>
                     </tr>
                     </thead>
 
                     <tbody>
-                    {classes.map((classSession) => {
-                        const funnel = funnels.find(
-                            (item) =>
-                                item.classSessionId === classSession.id
-                        )
-
-                        if (!funnel) return null
-
-                        return (
-                            <tr
-                                key={classSession.id}
-                                className="border-b border-slate-100"
-                            >
-                                <td className="py-4 font-medium">
-                                    {classSession.name}
-                                </td>
-                                <td className="py-4">
-                                    {funnel.classViews}
-                                </td>
-                                <td className="py-4">
-                                    {funnel.bookingStarts}
-                                </td>
-                                <td className="py-4">
-                                    {funnel.bookingCompletions}
-                                </td>
-                                <td className="py-4 font-semibold">
-                                    {funnel.overallConversionRate.toFixed(1)}%
-                                </td>
-                            </tr>
-                        )
-                    })}
+                    {analytics.map((item) => (
+                        <tr
+                            key={item.classSessionId}
+                            className="border-b border-slate-100"
+                        >
+                            <td className="py-4 font-medium">
+                                {item.className}
+                            </td>
+                            <td className="py-4">{item.views}</td>
+                            <td className="py-4">{item.bookingStarts}</td>
+                            <td className="py-4">{item.bookingsCompleted}</td>
+                            <td className="py-4 font-semibold">
+                                {item.viewToBookingRate.toFixed(1)}%
+                            </td>
+                            <td className="py-4">
+                                {item.bookingAbandonmentRate === null
+                                    ? 'N/A'
+                                    : `${item.bookingAbandonmentRate.toFixed(1)}%`}
+                            </td>
+                        </tr>
+                    ))}
                     </tbody>
                 </table>
             </div>

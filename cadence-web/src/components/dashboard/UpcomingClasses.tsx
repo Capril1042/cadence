@@ -102,29 +102,6 @@ function UpcomingClasses() {
         recordExposure()
     }, [experimentAssignment, classes])
 
-    useEffect(() => {
-        if (!experimentAssignment || classes.length === 0) {
-            return
-        }
-
-        async function recordExposure() {
-            for (const classSession of classes) {
-                try {
-                    await trackEvent({
-                        eventName: 'EXPERIMENT_EXPOSURE',
-                        memberId: 1,
-                        classSessionId: classSession.id,
-                        experimentId: experimentAssignment.experiment.id,
-                        experimentVariant: experimentAssignment.variant,
-                    })
-                } catch (error) {
-                    console.error('Experiment exposure tracking failed:', error)
-                }
-            }
-        }
-
-        recordExposure()
-    }, [experimentAssignment, classes])
     async function handleBooking(classId: number) {
         setBookingId(classId)
         setBookingMessage(null)

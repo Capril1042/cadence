@@ -1,5 +1,6 @@
 package com.cadence.cadence_api.controller;
 
+import com.cadence.cadence_api.dto.ExperimentResult;
 import com.cadence.cadence_api.model.AnalyticsEvent;
 import com.cadence.cadence_api.service.AnalyticsEventService;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,20 @@ public class AnalyticsEventController {
     public AnalyticsEvent trackEvent(
             @RequestParam String eventName,
             @RequestParam(required = false) Long memberId,
-            @RequestParam(required = false) Long classSessionId
+            @RequestParam(required = false) Long classSessionId,
+            @RequestParam(required = false) Long experimentId,
+            @RequestParam(required = false) String variant
     ) {
+        if (experimentId != null || variant != null) {
+            return analyticsEventService.trackEvent(
+                    eventName,
+                    memberId,
+                    classSessionId,
+                    experimentId,
+                    variant
+            );
+        }
+
         return analyticsEventService.trackEvent(
                 eventName,
                 memberId,
@@ -54,4 +67,26 @@ public class AnalyticsEventController {
     public List<Object[]> getClassEventSummary() {
         return analyticsEventService.getClassEventSummary();
     }
+    @PostMapping("/exposure")
+    public AnalyticsEvent trackExperimentExposure(
+            @RequestParam Long experimentId,
+            @RequestParam Long memberId,
+            @RequestParam Long classSessionId,
+            @RequestParam String variant
+    ) {
+        return analyticsEventService.trackEvent(
+                "EXPERIMENT_EXPOSURE",
+                memberId,
+                classSessionId,
+                experimentId,
+                variant
+        );
+    }
+    @GetMapping("/experiments/{experimentId}/results")
+    public List<ExperimentResult> getExperimentResults(
+            @PathVariable Long experimentId
+    ) {
+        return analyticsEventService.getExperimentResults(experimentId);
+    }
+
 }

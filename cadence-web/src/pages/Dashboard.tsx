@@ -3,6 +3,7 @@ import MetricCard from '../components/dashboard/MetricCard'
 import UpcomingClasses from '../components/dashboard/UpcomingClasses'
 import BookingFunnel from '../components/dashboard/BookingFunnel'
 import ClassFunnelComparison from '../components/dashboard/ClassFunnelComparison'
+import ExperimentResults from '../components/dashboard/ExperimentResults'
 
 function Dashboard() {
   return (
@@ -26,6 +27,9 @@ function Dashboard() {
         </div>
         <BookingFunnel />
         <ClassFunnelComparison />
+        <BookingFunnel />
+        <ClassFunnelComparison />
+        <ExperimentResults />
         <UpcomingClasses />
       </main>
     </div>

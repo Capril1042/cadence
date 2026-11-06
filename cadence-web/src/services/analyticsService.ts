@@ -2,6 +2,8 @@ export interface AnalyticsEventRequest {
     eventName: string
     memberId?: number
     classSessionId?: number
+    experimentId?: number
+    experimentVariant?: string
 }
 
 export async function trackEvent(
@@ -17,6 +19,13 @@ export async function trackEvent(
 
     if (event.classSessionId !== undefined) {
         params.append('classSessionId', event.classSessionId.toString())
+    }
+    if (event.experimentId !== undefined) {
+        params.append('experimentId', event.experimentId.toString())
+    }
+
+    if (event.experimentVariant !== undefined) {
+        params.append('variant', event.experimentVariant)
     }
 
     const response = await fetch(
@@ -55,6 +64,27 @@ export interface ClassAnalyticsSummary {
     bookingAbandonmentRate: number | null
 }
 
+export interface ExperimentResult {
+    variant: string
+    exposedMembers: number
+    bookingStarts: number
+    bookingsCompleted: number
+    startConversionRate: number
+    completionConversionRate: number
+}
+export async function getExperimentResults(
+    experimentId: number
+): Promise<ExperimentResult[]> {
+    const response = await fetch(
+        `http://localhost:8080/api/analytics/events/experiments/${experimentId}/results`
+    )
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch experiment results')
+    }
+
+    return response.json()
+}
 export async function getBookingFunnel(): Promise<BookingFunnel> {
     const response = await fetch(
         'http://localhost:8080/api/analytics/events/funnel'

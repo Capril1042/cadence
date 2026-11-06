@@ -5,8 +5,12 @@ import {
     getUpcomingClasses,
     getBookings,
 } from '../../services/classService'
-import { trackEvent } from '../../services/analyticsService'
 import { useEffect, useRef, useState } from 'react'
+import {
+    getExperimentAssignment,
+    type ExperimentAssignment,
+} from '../../services/experimentService'
+import { trackEvent } from '../../services/analyticsService'
 
 function UpcomingClasses() {
     const [classes, setClasses] = useState<ClassSession[]>([])
@@ -19,12 +23,21 @@ function UpcomingClasses() {
     const [bookingMessageType, setBookingMessageType] = useState<'success' | 'error' | null>(null)
     const [bookings, setBookings] = useState<Booking[]>([])
     const trackedClassViews = useRef<Set<number>>(new Set())
+    const trackedExperimentExposures = useRef<Set<string>>(new Set())
+    const [experimentAssignment, setExperimentAssignment] =
+        useState<ExperimentAssignment | null>(null)
 
     useEffect(() => {
         async function loadClasses() {
             try {
                 const classData = await getUpcomingClasses()
                 const bookingData = await getBookings()
+                try {
+                    const assignment = await getExperimentAssignment(1, 1)
+                    setExperimentAssignment(assignment)
+                } catch (error) {
+                    console.error('Experiment assignment failed:', error)
+                }
 
                 setClasses(classData)
                 for (const classSession of classData) {
@@ -55,6 +68,63 @@ function UpcomingClasses() {
 
         loadClasses()
     }, [])
+    useEffect(() => {
+        if (!experimentAssignment || classes.length === 0) {
+            return
+        }
+
+        async function recordExposure() {
+            for (const classSession of classes) {
+                const exposureKey =
+                    `${experimentAssignment.experiment.id}-${1}-${classSession.id}`
+
+                if (trackedExperimentExposures.current.has(exposureKey)) {
+                    continue
+                }
+
+                trackedExperimentExposures.current.add(exposureKey)
+
+                try {
+                    await trackEvent({
+                        eventName: 'EXPERIMENT_EXPOSURE',
+                        memberId: 1,
+                        classSessionId: classSession.id,
+                        experimentId: experimentAssignment.experiment.id,
+                        experimentVariant: experimentAssignment.variant,
+                    })
+                } catch (error) {
+                    trackedExperimentExposures.current.delete(exposureKey)
+                    console.error('Experiment exposure tracking failed:', error)
+                }
+            }
+        }
+
+        recordExposure()
+    }, [experimentAssignment, classes])
+
+    useEffect(() => {
+        if (!experimentAssignment || classes.length === 0) {
+            return
+        }
+
+        async function recordExposure() {
+            for (const classSession of classes) {
+                try {
+                    await trackEvent({
+                        eventName: 'EXPERIMENT_EXPOSURE',
+                        memberId: 1,
+                        classSessionId: classSession.id,
+                        experimentId: experimentAssignment.experiment.id,
+                        experimentVariant: experimentAssignment.variant,
+                    })
+                } catch (error) {
+                    console.error('Experiment exposure tracking failed:', error)
+                }
+            }
+        }
+
+        recordExposure()
+    }, [experimentAssignment, classes])
     async function handleBooking(classId: number) {
         setBookingId(classId)
         setBookingMessage(null)
@@ -64,6 +134,8 @@ function UpcomingClasses() {
                 eventName: 'BOOKING_STARTED',
                 memberId: 1,
                 classSessionId: classId,
+                experimentId: experimentAssignment?.experiment.id,
+                experimentVariant: experimentAssignment?.variant,
             })
         } catch (error) {
             console.error('Analytics tracking failed:', error)
@@ -76,6 +148,8 @@ function UpcomingClasses() {
                     eventName: 'BOOKING_COMPLETED',
                     memberId: 1,
                     classSessionId: classId,
+                    experimentId: experimentAssignment?.experiment.id,
+                    experimentVariant: experimentAssignment?.variant,
                 })
             } catch (error) {
                 console.error('Analytics tracking failed:', error)
@@ -237,7 +311,11 @@ function UpcomingClasses() {
                                         disabled={bookingId === classSession.id}
                                         className="mt-3 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                                     >
-                                        {bookingId === classSession.id ? 'Booking...' : 'Book Class'}
+                                        {bookingId === classSession.id
+                                            ? 'Booking...'
+                                            : experimentAssignment?.variant === 'B'
+                                                ? 'Reserve My Spot'
+                                                : 'Book Class'}
                                     </button>
                                 )}
                                 {bookingMessage && bookingMessageClassId === classSession.id && (

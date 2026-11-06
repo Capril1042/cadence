@@ -18,6 +18,10 @@ public class AnalyticsEvent {
 
     private LocalDateTime timestamp;
 
+    private Long experimentId;
+
+    private String experimentVariant;
+
     protected AnalyticsEvent() {
     }
 
@@ -50,5 +54,26 @@ public class AnalyticsEvent {
 
     public LocalDateTime getTimestamp() {
         return timestamp;
+    }
+    public Long getExperimentId() {
+        return experimentId;
+    }
+
+    public String getExperimentVariant() {
+        return experimentVariant;
+    }
+    public AnalyticsEvent(
+            String eventName,
+            Long memberId,
+            Long classSessionId,
+            Long experimentId,
+            String experimentVariant
+    ) {
+        this.eventName = eventName;
+        this.memberId = memberId;
+        this.classSessionId = classSessionId;
+        this.experimentId = experimentId;
+        this.experimentVariant = experimentVariant;
+        this.timestamp = LocalDateTime.now();
     }
 }

@@ -41,11 +41,61 @@ The goal is to demonstrate how full-stack engineering can support both product f
 
 ## Architecture
 
-Cadence uses a React frontend that communicates with a Spring Boot REST API.
+The application follows a layered architecture. The React frontend communicates with the Spring Boot REST API, which coordinates business logic, persistence, analytics tracking, and experimentation.
 
-The backend handles business logic, booking validation, persistence, analytics event collection, and experiment assignment. Data is stored using JPA entities and repositories, while SQL queries power reporting and conversion analysis.
+```mermaid
+flowchart TB
+    subgraph Frontend["React + TypeScript"]
+        UI["User Interface"]
+        BookingUI["Class Discovery & Booking"]
+        Dashboard["Growth Analytics Dashboard"]
+        ExperimentUI["A/B Test Experience"]
 
-The frontend presents studio workflows and translates user interactions into analytics events.
+        UI --> BookingUI
+        UI --> Dashboard
+        UI --> ExperimentUI
+    end
+
+    subgraph Backend["Spring Boot REST API"]
+        Controllers["REST Controllers"]
+
+        subgraph Services["Service Layer"]
+            BookingService["Booking Service"]
+            AnalyticsService["Analytics Event Service"]
+            ExperimentService["Experiment Service"]
+        end
+
+        Controllers --> BookingService
+        Controllers --> AnalyticsService
+        Controllers --> ExperimentService
+    end
+
+    subgraph Data["Persistence Layer"]
+        Repositories["Spring Data JPA Repositories"]
+        Database[("H2 Database")]
+
+        Repositories --> Database
+    end
+
+    BookingUI -->|"Booking + analytics requests"| Controllers
+    Dashboard -->|"HTTP: analytics queries"| Controllers
+    ExperimentUI -->|"HTTP: assignments & exposure"| Controllers
+
+    BookingService --> Repositories
+    AnalyticsService --> Repositories
+    ExperimentService --> Repositories
+
+    ExperimentService -->|"Variant assignments"| Repositories
+    AnalyticsService -->|"SQL analytics queries"| Repositories
+```
+
+### Key Data Flows
+
+1. **Booking:** Members browse classes and book sessions. The backend validates booking rules and persists booking records.
+2. **Analytics:** Frontend interactions generate events that are sent to the backend and stored for reporting.
+3. **Experimentation:** The backend assigns members to persistent experiment variants. Exposure and conversion events are used to compare results.
+4. **Growth reporting:** SQL queries aggregate behavioral events into booking funnel, class performance, and experiment conversion metrics.
+
 
 ## Engineering Focus
 

@@ -4,6 +4,7 @@ import UpcomingClasses from '../components/dashboard/UpcomingClasses'
 import BookingFunnel from '../components/dashboard/BookingFunnel'
 import ClassFunnelComparison from '../components/dashboard/ClassFunnelComparison'
 import ExperimentResults from '../components/dashboard/ExperimentResults'
+import RetentionOverview from '../components/dashboard/RetentionOverview'
 
 function Dashboard() {
   return (
@@ -27,9 +28,8 @@ function Dashboard() {
         </div>
         <BookingFunnel />
         <ClassFunnelComparison />
-        <BookingFunnel />
-        <ClassFunnelComparison />
         <ExperimentResults />
+        <RetentionOverview />
         <UpcomingClasses />
       </main>
     </div>

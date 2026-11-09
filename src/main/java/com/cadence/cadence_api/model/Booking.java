@@ -30,6 +30,17 @@ public class Booking {
         this.status = "BOOKED";
     }
 
+    public Booking(
+            Member member,
+            ClassSession classSession,
+            LocalDateTime bookingDate
+    ) {
+        this.member = member;
+        this.classSession = classSession;
+        this.bookingDate = bookingDate;
+        this.status = "BOOKED";
+    }
+
     public Long getId() {
         return id;
     }

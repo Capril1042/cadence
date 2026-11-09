@@ -7,10 +7,12 @@ import com.cadence.cadence_api.repository.MemberRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.time.LocalDateTime;
 
 @Configuration
+@Profile("!retention-test")
 public class DataInitializer {
 
     @Bean

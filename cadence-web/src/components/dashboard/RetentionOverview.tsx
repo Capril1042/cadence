@@ -21,7 +21,7 @@ function RetentionOverview() {
     useEffect(() => {
         async function loadRetention() {
             try {
-                const [overall, classes, inactive, neverBooked] = await Promise.all([
+                const [overall, classes, inactive, neverBooked, cancelledOnly] = await Promise.all([
                     getOverallRetention(),
                     getClassRetention(),
                     getInactiveMembers(),
@@ -33,7 +33,7 @@ function RetentionOverview() {
                 setClassRetention(classes)
                 setInactiveMembers(inactive)
                 setNeverBookedMembers(neverBooked)
-                setCancelledOnlyMembers(cancelledOnlyMembers)
+                setCancelledOnlyMembers(cancelledOnly)
             } catch {
                 setError('Unable to load retention insights.')
             }

@@ -68,6 +68,10 @@ public class RetentionTestDataInitializer {
                     "Spin", "Jessica", now.plusHours(5), 20
             ));
 
+            ClassSession fullTestClass = classSessionRepository.save(new ClassSession(
+                    "Capacity Test", "Test Instructor", now.plusHours(6), 1
+            ));
+
             // Jane: three bookings across two classes
             bookingRepository.save(new Booking(jane, yoga, now.minusDays(2)));
             bookingRepository.save(new Booking(jane, yoga, now.minusDays(5)));

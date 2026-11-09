@@ -6,6 +6,9 @@ Cadence is a portfolio project that simulates the digital experience of a fitnes
 
 The goal is to demonstrate how full-stack engineering can support both product functionality and business growth.
 
+## Application Preview
+
+![CadenceDashboard.png](screenshots/CadenceDashboard.png)
 ## Key Features
 
 ### Membership and Class Management
@@ -63,11 +66,13 @@ flowchart TB
             BookingService["Booking Service"]
             AnalyticsService["Analytics Event Service"]
             ExperimentService["Experiment Service"]
+            RetentionService["Retention Service"]
         end
 
         Controllers --> BookingService
         Controllers --> AnalyticsService
         Controllers --> ExperimentService
+        Controllers --> RetentionService
     end
 
     subgraph Data["Persistence Layer"]
@@ -84,6 +89,7 @@ flowchart TB
     BookingService --> Repositories
     AnalyticsService --> Repositories
     ExperimentService --> Repositories
+    RetentionService --> Repositories
 
     ExperimentService -->|"Variant assignments"| Repositories
     AnalyticsService -->|"SQL analytics queries"| Repositories
@@ -109,20 +115,38 @@ This project explores several concepts relevant to growth engineering:
 
 ## Current Project Status
 
-Implemented:
-- Member and class persistence.
-- Booking and cancellation workflows.
-- Analytics event tracking.
-- Booking funnel and class-level analytics.
-- A/B experiment assignment and exposure tracking.
-- Experiment conversion reporting.
-- Backend unit tests and frontend production build validation.
+**Implemented:**
 
-Planned:
-- Retention and repeat-booking insights.
-- Additional growth reporting.
-- Checkout and lifecycle messaging workflows.
-- Deployment and production-readiness improvements.
+- Member and class persistence.
+- Booking and cancellation workflows, including duplicate booking prevention and capacity validation.
+- Analytics event tracking and booking funnel reporting.
+- Class-level conversion comparisons.
+- A/B experiment creation, activation, and persistent member-level variant assignment.
+- Experiment exposure tracking and conversion reporting.
+- Retention insights, including repeat booking rates, returning and one-time bookers, inactive members, never-booked members, and cancelled-only members.
+- Class-level repeat booking analysis.
+- Backend unit tests and frontend production build validation.
+- Centralized API exception handling and frontend error states.
+
+**Future improvements:**
+
+- Authentication and user-specific authorization.
+- More precise behavioral event instrumentation.
+- Production database integration and deployment.
+- Expanded checkout and lifecycle messaging workflows.
+
+## Project Limitations
+
+Cadence is a portfolio project and demonstration environment, not a production fitness booking platform.
+
+Current implementation considerations:
+
+- The development environment uses an in-memory H2 database, so application data resets when the backend restarts.
+- Member IDs currently stand in for authenticated user identity.
+- Class-view and experiment-exposure events are recorded when the class list loads, rather than based on verified viewport visibility.
+- Retention metrics measure booking behavior, not actual class attendance.
+- Production deployment has been deferred.
+
 
 ## Running Locally
 

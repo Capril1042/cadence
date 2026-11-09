@@ -16,13 +16,13 @@ function Header() {
                     Members
                 </Link>
 
-                <a href="#" className="hover:text-indigo-600">
+                <Link to="/classes" className="hover:text-indigo-600">
                     Classes
-                </a>
+                </Link>
 
-                <a href="#" className="hover:text-indigo-600">
+                <Link to="/analytics" className="hover:text-indigo-600">
                     Analytics
-                </a>
+                </Link>
             </nav>
         </header>
     )
